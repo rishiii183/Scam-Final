@@ -62,7 +62,7 @@ The frontend provides the clinical forensic dashboard and real-time chat interfa
 
 ---
 
-## 🔍 Forensic Features
+## 🔍 Features
 - **Job URL Investigation**: Analyzes job postings for registration fees, infrastructure markers, and domain hygiene.
 - **E-mail Audit Tool**: Parses suspicious recruiter emails for urgency tactics and fraud signals.
 - **Salary Calibration**: Cross-checks compensation against market rates to detect bait-and-switch scams.
