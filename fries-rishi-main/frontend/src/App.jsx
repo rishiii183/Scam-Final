@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
 const API_BASE_URL = 'http://localhost:8000';
 const INITIAL_MESSAGES = [];
@@ -144,7 +144,7 @@ const App = () => {
       const data = await callCheckAPI({
         salary_offered: numericSalary,
         company_claimed: jobRole.trim() || "Unknown Role",
-        offer_text: `Job Role: ${jobRole}. Salary Offered: ${salaryOffered}.`
+        offer_text: `Position: ${jobRole.trim() || "unspecified role"}. Monthly salary offered: ${salaryOffered}. This is a compensation verification request for the stated job role and salary amount. Please analyze if this salary is realistic and flag any anomalies.`
       });
       setSalaryResult(data);
     } catch (err) {
@@ -167,7 +167,7 @@ const App = () => {
     try {
       const data = await callCheckAPI({
         company_claimed: companyName.trim(),
-        offer_text: `Company name to verify: ${companyName.trim()}`
+        offer_text: `Company name to verify: ${companyName.trim()}. Please cross-check this company name against known patterns of fraudulent recruitment firms. Check for generic naming conventions, suspicious keywords, and signs of a fake company identity.`
       });
       setCompanyResult(data);
     } catch (err) {
@@ -228,8 +228,12 @@ const App = () => {
         updateActiveConv({ messages: [...messages, userMsg, aiMsg, { role: 'ai', type: 'text', content: errText, timestamp: 'ERROR' }], formData: newFormData });
       } finally { setIsAnalyzing(false); }
       return;
-    } catch {
-      updateActiveConv({ messages: [...messages, userMsg, { role: 'ai', type: 'text', content: "ERROR: Signal noise detected in PDF buffer.", timestamp: 'EXCEPTION' }] });
+    } catch (err) {
+      console.error('PDF extraction error:', err);
+      const errMsg = err?.message?.includes('worker') || err?.message?.includes('Worker')
+        ? 'ERROR: PDF worker failed to load. Check internet connection.'
+        : `ERROR: ${err?.message || 'Signal noise detected in PDF buffer.'}`;
+      updateActiveConv({ messages: [...messages, userMsg, { role: 'ai', type: 'text', content: errMsg, timestamp: 'EXCEPTION' }] });
     } finally { setIsExtracting(false); }
   };
 
