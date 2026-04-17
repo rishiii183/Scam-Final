@@ -8,6 +8,10 @@ import {
   FileText, ScanSearch, Building2, TrendingDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import dollarGif from './assets/dollar.gif';
+import companyGif from './assets/corporate-culture.gif';
+import emailGif from './assets/message.gif';
+import investigationGif from './assets/icons8-investigation.gif';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
 
@@ -518,8 +522,8 @@ const App = () => {
               <div className={`max-w-[900px] mx-auto flex flex-col space-y-8 ${messages.length === 0 ? 'h-full' : 'pb-32'}`}>
                 {messages.length === 0 && (
                   <div className="flex flex-col items-center pt-20 pb-10 text-center space-y-6">
-                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl ${isDarkMode ? 'bg-violet-500/10 text-violet-400' : 'bg-blue-50 text-blue-500 shadow-blue-500/5'}`}>
-                      <ScanSearch size={32} />
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-md ${isDarkMode ? 'bg-violet-500/10 border border-violet-500/20' : 'bg-blue-50 shadow-blue-500/5'}`}>
+                      <img src={investigationGif} alt="Investigation" className="w-full h-full object-contain p-1 rounded-xl" />
                     </div>
                     <div className="space-y-2">
                       <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#111827]'}`}>New Investigation</h2>
@@ -587,7 +591,9 @@ const App = () => {
               ) : (
                 <div className={`border-2 rounded-[24px] p-6 lg:p-8 space-y-6 shadow-sm ${isDarkMode ? 'bg-[#0b1120] border-slate-800' : 'bg-white border-[#e5e7eb]'}`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-indigo-500/10 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><Mail size={24} /></div>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-md ${isDarkMode ? 'bg-indigo-500/10 border border-indigo-500/20' : 'bg-indigo-50 shadow-indigo-500/5'}`}>
+                      <img src={emailGif} alt="Email" className="w-full h-full object-contain p-1 rounded-xl" />
+                    </div>
                     <div>
                       <h2 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-[#111827]'}`}>E-mail Audit</h2>
                       <p className={`text-xs font-medium ${isDarkMode ? 'text-slate-400' : 'text-[#6b7280]'}`}>Analyze suspicious email text for fraud signals.</p>
@@ -625,7 +631,9 @@ const App = () => {
               ) : (
                 <div className={`border-2 rounded-[24px] p-6 lg:p-8 space-y-6 shadow-sm ${isDarkMode ? 'bg-[#0b1120] border-slate-800' : 'bg-white border-[#e5e7eb]'}`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-emerald-500/10 text-emerald-400' : 'bg-emerald-50 text-emerald-600'}`}><DollarSign size={24} /></div>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-md ${isDarkMode ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-emerald-50 shadow-emerald-500/5'}`}>
+                      <img src={dollarGif} alt="Salary" className="w-full h-full object-contain p-1 rounded-xl" />
+                    </div>
                     <div>
                       <h2 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-[#111827]'}`}>Salary Calibration</h2>
                       <p className={`text-xs font-medium ${isDarkMode ? 'text-slate-400' : 'text-[#6b7280]'}`}>Verify if compensation is realistic.</p>
@@ -680,7 +688,9 @@ const App = () => {
               ) : (
                 <div className={`border-2 rounded-[24px] p-6 lg:p-8 space-y-6 shadow-sm ${isDarkMode ? 'bg-[#0b1120] border-slate-800' : 'bg-white border-[#e5e7eb]'}`}>
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-rose-500/10 text-rose-400' : 'bg-rose-50 text-rose-600'}`}><Building2 size={24} /></div>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center overflow-hidden shadow-md ${isDarkMode ? 'bg-rose-500/10 border border-rose-500/20' : 'bg-rose-50 shadow-rose-500/5'}`}>
+                      <img src={companyGif} alt="Company" className="w-full h-full object-contain p-1 rounded-xl" />
+                    </div>
                     <div>
                       <h2 className={`text-xl font-black ${isDarkMode ? 'text-white' : 'text-[#111827]'}`}>Company Verification</h2>
                       <p className={`text-xs font-medium ${isDarkMode ? 'text-slate-400' : 'text-[#6b7280]'}`}>Verify legal existence and reputation.</p>
