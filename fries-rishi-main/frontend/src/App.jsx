@@ -483,9 +483,11 @@ const App = () => {
     <div className={`flex h-screen font-sans antialiased overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-[#020617] text-slate-200 selection:bg-violet-500/30' : 'bg-[#f3f4f6] text-[#374151] selection:bg-blue-100'}`}>
       <main className={`flex-1 flex flex-col relative min-w-0 transition-colors duration-300 ${isDarkMode ? 'bg-[#020617]' : 'bg-[#f9fafb]'}`}>
 
-        {/* ── Top Nav (Flex-Shrink-0) ── */}
-        <header className={`flex-shrink-0 h-[80px] px-6 lg:px-8 flex items-center justify-center z-10 transition-all duration-300 relative border-b ${isDarkMode ? 'bg-[#020617] border-white/5' : 'bg-[#f9fafb] border-gray-200/50'}`}>
-          <div className={`flex items-center p-1.5 rounded-full border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-xl ${isDarkMode ? 'bg-[#0b1120]/80 border-white/10' : 'bg-white border-[#e5e7eb]'}`}>
+        {/* ── Fixed Glass Navbar ── */}
+        <header className="fixed top-0 left-0 right-0 h-[110px] flex items-center justify-center bg-transparent z-50 pointer-events-none">
+          <div 
+            style={{ backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)' }}
+            className={`pointer-events-auto flex items-center p-2 rounded-full border transition-all duration-300 shadow-[0_8px_32px_rgb(0,0,0,0.15)] ${isDarkMode ? 'bg-[#0b1120]/30 border-white/10' : 'bg-white/20 border-white/40'}`}>
             <nav className="flex items-center gap-1">
               {[
                 { key: 'investigation', label: 'Job URL' },
@@ -496,7 +498,7 @@ const App = () => {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`relative text-[10px] font-black uppercase tracking-[0.12em] px-4 py-2.5 rounded-full transition-colors duration-300 font-display z-10 ${activeTab === key
+                  className={`relative flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.14em] px-6 py-3.5 rounded-full transition-all duration-300 font-display z-10 ${activeTab === key
                     ? 'text-white'
                     : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-[#6b7280] hover:text-[#111827]')}`}>
                   <span className="relative z-20">{label}</span>
@@ -513,8 +515,8 @@ const App = () => {
           </div>
         </header>
 
-        {/* ── Main Content ── */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-smooth">
+        {/* ── Main Content (Shifted for Nav) ── */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto scroll-smooth pt-[110px]">
 
           {/* ════════════════════ JOB URL TAB ════════════════════ */}
           {activeTab === 'investigation' ? (
