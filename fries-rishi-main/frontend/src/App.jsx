@@ -91,7 +91,15 @@ const App = () => {
   }, [messages, isAnalyzing, isExtracting, hasReport]);
 
   const updateActiveConv = (updates) => {
-    setConversations(prev => prev.map(c => c.id === activeConvId ? { ...c, ...updates } : c));
+    setConversations(prev => prev.map(c => {
+      if (c.id === activeConvId) {
+        const nextMessages = typeof updates.messages === 'function' 
+          ? updates.messages(c.messages) 
+          : (updates.messages || c.messages);
+        return { ...c, ...updates, messages: nextMessages };
+      }
+      return c;
+    }));
   };
 
   const handleNewInvestigation = () => {
@@ -209,7 +217,10 @@ const App = () => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       const newFormData = { ...formData, offer_text: cleanText };
-      updateActiveConv({ formData: newFormData, messages: [...messages, userMsg, aiMsg] });
+      updateActiveConv({ 
+        messages: (prev) => [...prev, userMsg, aiMsg], 
+        formData: newFormData 
+      });
       setIsExtracting(false);
       setIsAnalyzing(true);
       try {
@@ -224,12 +235,12 @@ const App = () => {
           role: 'ai', type: 'report', data: response.data,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
-        updateActiveConv({ messages: [...messages, userMsg, aiMsg, reportMsg], formData: newFormData });
+        updateActiveConv({ messages: (prev) => [...prev, reportMsg] });
       } catch (err) {
         const errText = err?.response?.status === 422
           ? `Payload mismatch (422): ${JSON.stringify(err.response.data.detail)}`
           : 'Backend unreachable — make sure Uvicorn is running on port 8000.';
-        updateActiveConv({ messages: [...messages, userMsg, aiMsg, { role: 'ai', type: 'text', content: errText, timestamp: 'ERROR' }], formData: newFormData });
+        updateActiveConv({ messages: (prev) => [...prev, { role: 'ai', type: 'text', content: errText, timestamp: 'ERROR' }] });
       } finally { setIsAnalyzing(false); }
       return;
     } catch (err) {
@@ -257,13 +268,15 @@ const App = () => {
     };
 
     let newFormData = { ...formData };
-    if (text.startsWith('http')) newFormData.job_url = text;
+    const isUrl = text.startsWith('http') || text.includes('www.') || (text.includes('.') && !text.includes(' '));
+    
+    if (isUrl) newFormData.job_url = text;
     else if (text.includes('@')) newFormData.recruiter_email = text;
     else if (/^\d+(\.\d+)?$/.test(text)) newFormData.salary_offered = text;
     else if (!newFormData.company_claimed) newFormData.company_claimed = text;
     else newFormData.offer_text = text;
 
-    updateActiveConv({ messages: [...messages, userMsg], formData: newFormData });
+    updateActiveConv({ messages: (prev) => [...prev, userMsg], formData: newFormData });
     setUserInput('');
 
     const payload = {
@@ -274,7 +287,7 @@ const App = () => {
       offer_text: newFormData.offer_text || text
     };
 
-    const shouldAnalyze = newFormData.job_url || newFormData.offer_text || text.startsWith('http');
+    const shouldAnalyze = newFormData.job_url || newFormData.offer_text || isUrl;
     if (!shouldAnalyze) return;
 
     (async () => {
@@ -287,7 +300,7 @@ const App = () => {
           role: 'ai', type: 'report', data: response.data,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
-        updateActiveConv({ messages: [...messages, userMsg, reportMsg], formData: newFormData });
+        updateActiveConv({ messages: (prev) => [...prev, reportMsg] });
       } catch (err) {
         const status = err?.response?.status;
         const detail = err?.response?.data?.detail;
@@ -295,8 +308,7 @@ const App = () => {
           ? `Payload mismatch (422): ${JSON.stringify(detail)}`
           : `Backend unreachable — make sure Uvicorn is running on port 8000.`;
         updateActiveConv({
-          messages: [...messages, userMsg, { role: 'ai', type: 'text', content: errText, timestamp: 'ERROR' }],
-          formData: newFormData
+          messages: (prev) => [...prev, { role: 'ai', type: 'text', content: errText, timestamp: 'ERROR' }]
         });
       } finally { setIsAnalyzing(false); }
     })();
@@ -399,8 +411,8 @@ const App = () => {
             </div>
           )}
 
-          {/* Clean signals */}
-          {clean.length > 0 && (
+          {/* Clean signals - Only shown for non-critical scores */}
+          {clean.length > 0 && score > 35 && (
             <div className="space-y-3">
               <p className={`text-[10px] font-black uppercase tracking-widest ${isDarkMode ? 'text-emerald-400' : 'text-emerald-500'}`}>
                 ✓ Clear Checks — {clean.length} passed
@@ -420,13 +432,13 @@ const App = () => {
           )}
 
           {/* View More */}
-          {(flagged.length > 3 || clean.length > 3) && (
+          {(flagged.length > 3 || (score > 35 && clean.length > 3)) && (
             <button
               onClick={() => setExpanded(!expanded)}
               className={`w-full py-4 rounded-2xl border-2 border-dashed font-black uppercase tracking-widest text-[10px] transition-all
                 ${isDarkMode ? 'border-slate-800 text-slate-500 hover:text-white hover:bg-slate-800/30' : 'border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
             >
-              {expanded ? '↑ Show Less' : `↓ View ${flagged.length + clean.length - (Math.min(flagged.length, 3) + Math.min(clean.length, 3))} More Signal Checks`}
+              {expanded ? '↑ Show Less' : `↓ View ${flagged.length + (score > 35 ? clean.length : 0) - (Math.min(flagged.length, 3) + (score > 35 ? Math.min(clean.length, 3) : 0))} More Signal Checks`}
             </button>
           )}
 
@@ -501,12 +513,16 @@ const App = () => {
                   className={`relative flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.14em] px-6 py-3.5 rounded-full transition-all duration-300 font-display z-10 ${activeTab === key
                     ? 'text-white'
                     : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-[#6b7280] hover:text-[#111827]')}`}>
-                  <span className="relative z-20">{label}</span>
+                  <motion.span 
+                    layout
+                    className="relative z-20 transition-colors duration-300">
+                    {label}
+                  </motion.span>
                   {activeTab === key && (
                     <motion.div
                       layoutId="active-tab"
                       className={`absolute inset-0 rounded-full shadow-lg z-10 ${isDarkMode ? 'bg-violet-600 shadow-violet-500/20' : 'bg-[#2563eb] shadow-blue-500/20'}`}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
                     />
                   )}
                 </button>
