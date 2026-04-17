@@ -360,7 +360,10 @@ const App = () => {
           data.verdict === 'SUSPICIOUS' ? '#f59e0b' : '#3b82f6';
 
     return (
-      <div className={`border-2 rounded-[32px] overflow-hidden shadow-2xl text-left w-full transition-all ${isDarkMode ? 'bg-[#0b1120] border-slate-800 shadow-black' : 'bg-white border-[#e5e7eb] shadow-blue-500/5'}`}>
+      <div className={`border-2 rounded-[32px] overflow-hidden shadow-2xl text-left w-full transition-all 
+        ${isDarkMode 
+          ? 'bg-[#0b1120]/40 border-white/5 backdrop-blur-xl' 
+          : 'bg-white/40 border-white/60 backdrop-blur-xl shadow-blue-500/5'}`}>
         <div className="p-6 lg:p-10 space-y-8">
           {/* Header */}
           <div className="flex items-start justify-between flex-wrap gap-6">
@@ -436,7 +439,7 @@ const App = () => {
             <button
               onClick={() => setExpanded(!expanded)}
               className={`w-full py-4 rounded-2xl border-2 border-dashed font-black uppercase tracking-widest text-[10px] transition-all
-                ${isDarkMode ? 'border-slate-800 text-slate-500 hover:text-white hover:bg-slate-800/30' : 'border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-50'}`}
+                ${isDarkMode ? 'border-white/10 text-slate-500 hover:text-white hover:bg-white/5' : 'border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-white/40'}`}
             >
               {expanded ? '↑ Show Less' : `↓ View ${flagged.length + (score > 35 ? clean.length : 0) - (Math.min(flagged.length, 3) + (score > 35 ? Math.min(clean.length, 3) : 0))} More Signal Checks`}
             </button>
@@ -498,8 +501,12 @@ const App = () => {
         {/* ── Fixed Glass Navbar ── */}
         <header className="fixed top-0 left-0 right-0 h-[110px] flex items-center justify-center bg-transparent z-50 pointer-events-none">
           <div 
-            style={{ backdropFilter: 'blur(40px)', WebkitBackdropFilter: 'blur(40px)' }}
-            className={`pointer-events-auto flex items-center p-2 rounded-full border transition-all duration-300 shadow-[0_8px_32px_rgb(0,0,0,0.15)] ${isDarkMode ? 'bg-[#0b1120]/30 border-white/10' : 'bg-white/20 border-white/40'}`}>
+            style={{ 
+              backdropFilter: 'blur(80px) saturate(200%) contrast(110%)', 
+              WebkitBackdropFilter: 'blur(80px) saturate(200%) contrast(110%)' 
+            }}
+            className={`pointer-events-auto flex items-center p-1.5 rounded-full border transition-all duration-500 shadow-[0_8px_32px_rgb(0,0,0,0.12)] 
+              ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white/30 border-white/60'}`}>
             <nav className="flex items-center gap-1">
               {[
                 { key: 'investigation', label: 'Job URL' },
