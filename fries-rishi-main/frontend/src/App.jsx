@@ -144,7 +144,7 @@ const App = () => {
       const data = await callCheckAPI({
         salary_offered: numericSalary,
         company_claimed: jobRole.trim() || "Unknown Role",
-        offer_text: `Position: ${jobRole.trim() || "unspecified role"}. Monthly salary offered: ${salaryOffered}. This is a compensation verification request for the stated job role and salary amount. Please analyze if this salary is realistic and flag any anomalies.`
+        offer_text: `Job Role: ${jobRole}. Salary Offered: ${salaryOffered}.`
       });
       setSalaryResult(data);
     } catch (err) {
@@ -167,7 +167,7 @@ const App = () => {
     try {
       const data = await callCheckAPI({
         company_claimed: companyName.trim(),
-        offer_text: `Company name to verify: ${companyName.trim()}. Please cross-check this company name against known patterns of fraudulent recruitment firms. Check for generic naming conventions, suspicious keywords, and signs of a fake company identity.`
+        offer_text: `Company name to verify: ${companyName.trim()}`
       });
       setCompanyResult(data);
     } catch (err) {
@@ -479,29 +479,34 @@ const App = () => {
     <div className={`flex h-screen font-sans antialiased overflow-hidden transition-colors duration-300 ${isDarkMode ? 'bg-[#020617] text-slate-200 selection:bg-violet-500/30' : 'bg-[#f3f4f6] text-[#374151] selection:bg-blue-100'}`}>
       <main className={`flex-1 flex flex-col relative min-w-0 transition-colors duration-300 ${isDarkMode ? 'bg-[#020617]' : 'bg-[#f9fafb]'}`}>
 
-        {/* ── Top Nav ── */}
-        <header className={`h-[100px] px-6 lg:px-8 flex items-center justify-center z-10 sticky top-0 transition-all duration-300 relative ${isDarkMode ? 'bg-[#020617]' : 'bg-[#f9fafb]'}`}>
-          <div className={`flex items-center p-2 rounded-full border transition-all duration-300 shadow-2xl backdrop-blur-xl ${isDarkMode ? 'bg-[#0b1120]/60 border-white/10 shadow-black/40' : 'bg-white/70 border-white/60 shadow-blue-500/10'}`}>
-            <nav className="flex items-center gap-2">
+        {/* ── Top Nav (Flex-Shrink-0) ── */}
+        <header className={`flex-shrink-0 h-[80px] px-6 lg:px-8 flex items-center justify-center z-10 transition-all duration-300 relative border-b ${isDarkMode ? 'bg-[#020617] border-white/5' : 'bg-[#f9fafb] border-gray-200/50'}`}>
+          <div className={`flex items-center p-1.5 rounded-full border transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-xl ${isDarkMode ? 'bg-[#0b1120]/80 border-white/10' : 'bg-white border-[#e5e7eb]'}`}>
+            <nav className="flex items-center gap-1">
               {[
                 { key: 'investigation', label: 'Job URL' },
                 { key: 'email', label: 'E-mail Audit' },
                 { key: 'salary', label: 'Salary' },
                 { key: 'company', label: 'Company' }
               ].map(({ key, label }) => (
-                <button key={key} onClick={() => setActiveTab(key)}
-                  className={`text-[11px] font-black uppercase tracking-[0.15em] px-6 py-3.5 rounded-full transition-all font-display ${activeTab === key
-                    ? (isDarkMode ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'bg-[#2563eb] text-white shadow-lg shadow-blue-500/20')
-                    : (isDarkMode ? 'text-slate-400 hover:text-white hover:bg-slate-800/50' : 'text-[#6b7280] hover:text-[#111827] hover:bg-gray-50')}`}>
-                  {label}
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key)}
+                  className={`relative text-[10px] font-black uppercase tracking-[0.12em] px-4 py-2.5 rounded-full transition-colors duration-300 font-display z-10 ${activeTab === key
+                    ? 'text-white'
+                    : (isDarkMode ? 'text-slate-400 hover:text-white' : 'text-[#6b7280] hover:text-[#111827]')}`}>
+                  <span className="relative z-20">{label}</span>
+                  {activeTab === key && (
+                    <motion.div
+                      layoutId="active-tab"
+                      className={`absolute inset-0 rounded-full shadow-lg z-10 ${isDarkMode ? 'bg-violet-600 shadow-violet-500/20' : 'bg-[#2563eb] shadow-blue-500/20'}`}
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
                 </button>
               ))}
             </nav>
           </div>
-          <button onClick={() => setIsDarkMode(d => !d)}
-            className={`absolute right-6 lg:right-10 px-4 py-2 rounded-full text-[11px] font-black uppercase tracking-widest border transition-all ${isDarkMode ? 'border-slate-700 text-slate-400 hover:text-white' : 'border-[#e5e7eb] text-[#6b7280] hover:text-[#111827]'}`}>
-            {isDarkMode ? '☀ Light' : '☾ Dark'}
-          </button>
         </header>
 
         {/* ── Main Content ── */}
@@ -518,7 +523,7 @@ const App = () => {
                     </div>
                     <div className="space-y-2">
                       <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#111827]'}`}>New Investigation</h2>
-                      <p className={`max-w-sm text-sm ${isDarkMode ? 'text-slate-400' : 'text-[#6b7280]'}`}>Paste a job URL or upload a PDF offer letter to begin forensic analysis.</p>
+                      <p className={`max-w-sm text-sm ${isDarkMode ? 'text-slate-400' : 'text-[#6b7280]'}`}>Paste a job URL or upload a PDF offer letter to begin analysis.</p>
                     </div>
                     <button onClick={handleNewInvestigation}
                       className={`text-[11px] font-black uppercase tracking-widest px-6 py-3 rounded-full border transition-all ${isDarkMode ? 'border-slate-700 text-slate-400 hover:text-white' : 'border-[#e5e7eb] text-[#6b7280] hover:text-[#111827]'}`}>
@@ -592,7 +597,7 @@ const App = () => {
                     value={emailText}
                     onChange={(e) => setEmailText(e.target.value)}
                     placeholder="Paste email content here..."
-                    className={`w-full h-40 border-2 rounded-2xl p-4 text-sm outline-none resize-none transition-all ${isDarkMode ? 'bg-[#020617] border-slate-800 text-slate-300 focus:border-violet-500' : 'bg-[#f9fafb] border-[#e5e7eb] focus:border-[#2563eb]'}`}
+                    className={`w-full h-24 border-2 rounded-2xl p-4 text-sm outline-none resize-none transition-all ${isDarkMode ? 'bg-[#020617] border-slate-800 text-slate-300 focus:border-violet-500' : 'bg-[#f9fafb] border-[#e5e7eb] focus:border-[#2563eb]'}`}
                   />
                   {emailError && <ErrorBox msg={emailError} />}
                   {isEmailAnalyzing
@@ -710,9 +715,9 @@ const App = () => {
           )}
         </div>
 
-        {/* ── Footer Input (Job URL tab only) ── */}
+        {/* ── Footer Input (Flex-Shrink-0) ── */}
         {activeTab === 'investigation' && !(isAnalyzing || isExtracting || hasReport) && (
-          <footer className={`px-4 lg:px-10 py-3 lg:py-5 border-t sticky bottom-0 transition-colors duration-300 ${isDarkMode ? 'bg-[#020617] border-slate-800' : 'bg-[#f9fafb] border-[#e5e7eb]'}`}>
+          <footer className={`flex-shrink-0 px-4 lg:px-10 py-3 lg:py-5 border-t transition-colors duration-300 ${isDarkMode ? 'bg-[#020617] border-white/5' : 'bg-[#f9fafb] border-gray-200'}`}>
             <div className={`max-w-[800px] mx-auto flex items-center border-2 rounded-[20px] lg:rounded-[24px] pr-2 pl-3 lg:pl-4 py-1 transition-all ${isDarkMode ? 'bg-[#0b1120] border-slate-800' : 'bg-white border-[#e5e7eb]'}`}>
               <button onClick={() => fileInputRef.current?.click()} className={`p-2.5 rounded-lg shrink-0 transition-colors ${isDarkMode ? 'text-slate-500 hover:text-violet-400' : 'text-[#9ca3af] hover:text-[#2563eb]'}`}>
                 <Paperclip size={18} />
