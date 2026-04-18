@@ -25,7 +25,7 @@ def check_fee_language(offer_text: str) -> Dict:
     return {
         "flag": matches >= 1,
         "matches": matches,
-        "penalty": 30 + (matches * 5),
+        "penalty": 40 + (matches * 10) if matches else 0,
         "reason": f"{matches} payment-related scam indicators detected." if matches else "No fee language detected.",
         "hard_cap": matches >= 2,
     }
@@ -44,7 +44,7 @@ def check_salary_anomaly(salary: float) -> Dict:
     if salary > max_salary:
         return {
             "flag": True,
-            "penalty": 25,
+            "penalty": 30,
             "reason": "Salary unusually high for role",
         }
 
@@ -58,11 +58,11 @@ def check_salary_anomaly(salary: float) -> Dict:
 def check_nlp_classifier(offer_text: str) -> Dict:
     probability = model.predict_proba([offer_text])[0][1]
 
-    if probability >= 0.55:
+    if probability > 0.75:
         return {
             "flag": True,
             "confidence": float(probability),
-            "penalty": 20,
+            "penalty": 35,
             "reason": "Text classified as scam-like",
         }
 
@@ -74,6 +74,19 @@ def check_nlp_classifier(offer_text: str) -> Dict:
     }
 
 
+def apply_hard_caps(score: int, results: Dict) -> int:
+    if results["fee"]["hard_cap"]:
+        score = min(score, 20)
+
+    if results["nlp"]["confidence"] > 0.8 and results["nlp"]["flag"]:
+        score = min(score, 25)
+
+    if results["fee"]["flag"] and results["salary"]["flag"]:
+        score = min(score, 15)
+
+    return score
+
+
 def run_ml_checks(offer_text: str, salary: float = 0, company: str = "") -> Dict:
     """
     Placeholder ML checks pipeline.
@@ -82,6 +95,11 @@ def run_ml_checks(offer_text: str, salary: float = 0, company: str = "") -> Dict
     fee_result = check_fee_language(offer_text)
     salary_result = check_salary_anomaly(salary)
     nlp_result = check_nlp_classifier(offer_text)
+    results = {
+        "fee": fee_result,
+        "salary": salary_result,
+        "nlp": nlp_result,
+    }
 
     total_penalty = (
         fee_result["penalty"] +
@@ -89,14 +107,19 @@ def run_ml_checks(offer_text: str, salary: float = 0, company: str = "") -> Dict
         nlp_result["penalty"]
     )
 
-    if fee_result["hard_cap"]:
-        trust_score = max(0, 30 - total_penalty)
-    else:
-        trust_score = max(0, 100 - total_penalty)
+    score = 100 - total_penalty
+    score = apply_hard_caps(score, results)
+    score = max(score, 0)
+    if not any([
+        fee_result["flag"],
+        salary_result["flag"],
+        nlp_result["flag"]
+    ]):
+        score = max(score, 80)
 
-    if trust_score >= 70:
+    if score >= 70:
         verdict = "VERIFIED"
-    elif trust_score >= 40:
+    elif score >= 40:
         verdict = "SUSPICIOUS"
     else:
         verdict = "SCAM"
@@ -113,12 +136,8 @@ def run_ml_checks(offer_text: str, salary: float = 0, company: str = "") -> Dict
         reasons.append(nlp_result["reason"])
 
     return {
-        "trust_score": trust_score,
+        "trust_score": score,
         "verdict": verdict,
         "reasons": reasons,
-        "details": {
-            "fee": fee_result,
-            "salary": salary_result,
-            "nlp": nlp_result,
-        },
+        "details": results,
     }
